@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -28,9 +27,9 @@ import jakarta.persistence.EntityManagerFactory;
 @ComponentScan("ru.bsuedu.cad.lab")
 @EnableJpaRepositories("ru.bsuedu.cad.lab.repository")
 @EnableWebMvc
-@EnableMethodSecurity
 public class AppConfig implements WebMvcConfigurer {
 
+    // Настройка подключения к БД (HikariCP + H2)
     @Bean
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
@@ -42,25 +41,27 @@ public class AppConfig implements WebMvcConfigurer {
         return new HikariDataSource(config);
     }
 
+    // Настройка JPA (Hibernate)
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("ru.bsuedu.cad.lab.entity");
-
+        
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
-
+        
         Properties properties = new Properties();
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
         properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.format_sql", "true");
         em.setJpaProperties(properties);
-
+        
         return em;
     }
 
+    // Менеджер транзакций
     @Bean
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
@@ -68,6 +69,7 @@ public class AppConfig implements WebMvcConfigurer {
         return transactionManager;
     }
 
+    // Thymeleaf: настройка расположения HTML-шаблонов
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
@@ -78,6 +80,7 @@ public class AppConfig implements WebMvcConfigurer {
         return resolver;
     }
 
+    // Thymeleaf: движок шаблонов
     @Bean
     public SpringTemplateEngine templateEngine(SpringResourceTemplateResolver templateResolver) {
         SpringTemplateEngine engine = new SpringTemplateEngine();
@@ -85,6 +88,7 @@ public class AppConfig implements WebMvcConfigurer {
         return engine;
     }
 
+    // Thymeleaf: ViewResolver для отображения страниц
     @Bean
     public ThymeleafViewResolver viewResolver(SpringTemplateEngine templateEngine) {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
